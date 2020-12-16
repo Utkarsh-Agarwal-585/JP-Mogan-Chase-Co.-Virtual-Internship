@@ -1,0 +1,91 @@
+From c98ab5c904bf4b51333229fcdefe2227b8fd7d90 Mon Sep 17 00:00:00 2001
+From: Utkarsh Agarwal <agrawalu01@gmail.com>
+Date: Thu, 28 May 2020 13:56:25 +0530
+Subject: [PATCH] Create Patch File
+
+---
+ client3.py     | 14 ++++++++++----
+ client_test.py |  8 +++++++-
+ 2 files changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/client3.py b/client3.py
+index f1771c3..7876dd7 100644
+--- a/client3.py
++++ b/client3.py
+@@ -23,6 +23,7 @@ import time
+ import json
+ import random
+ 
++
+ # Server API URLs
+ QUERY = "http://localhost:8080/query?id={}"
+ 
+@@ -35,25 +36,30 @@ def getDataPoint(quote):
+ 	stock = quote['stock']
+ 	bid_price = float(quote['top_bid']['price'])
+ 	ask_price = float(quote['top_ask']['price'])
+-	price = bid_price
++	price = (bid_price + ask_price)/2
+ 	return stock, bid_price, ask_price, price
+ 
+ def getRatio(price_a, price_b):
++
+ 	""" Get ratio of price_a and price_b """
+ 	""" ------------- Update this function ------------- """
+ 	""" Also create some unit tests for this function in client_test.py """
+-	return 1
++	if(price_b == 0):
++		return
++	return price_a/price_b
+ 
+ # Main
+ if __name__ == "__main__":
+ 
+ 	# Query the price once every N seconds.
+-	for _ in iter(range(N)):
++	for _ in range(N):
+ 		quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
+ 
+ 		""" ----------- Update to get the ratio --------------- """
++		prices = {}
+ 		for quote in quotes:
+ 			stock, bid_price, ask_price, price = getDataPoint(quote)
++			prices[stock] = price
+ 			print ("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
+ 
+-		print ("Ratio %s" % getRatio(price, price))
++		print ("Ratio %s" % (getRatio(prices['ABC'], price['DEF'])))
+diff --git a/client_test.py b/client_test.py
+index af2bf26..1a1f8f3 100644
+--- a/client_test.py
++++ b/client_test.py
+@@ -1,5 +1,5 @@
+ import unittest
+-from client3 import getDataPoint
++from client3 import getDataPoint, getRatio
+ 
+ class ClientTest(unittest.TestCase):
+   def test_getDataPoint_calculatePrice(self):
+@@ -9,6 +9,10 @@ class ClientTest(unittest.TestCase):
+     ]
+     """ ------------ Add the assertion below ------------ """
+ 
++
++  for quote in quotes:
++    self.assertEqual(getDataPoint(quote),(quote['stock'], quote['top_bid']['price'], quote['top_ask']['price'], quote['top_bid']['price'] + quote['top_ask']['price'])/2)
++
+   def test_getDataPoint_calculatePriceBidGreaterThanAsk(self):
+     quotes = [
+       {'top_ask': {'price': 119.2, 'size': 36}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 120.48, 'size': 109}, 'id': '0.109974697771', 'stock': 'ABC'},
+@@ -18,6 +22,8 @@ class ClientTest(unittest.TestCase):
+ 
+ 
+   """ ------------ Add more unit tests ------------ """
++  for quote in quotes:
++    self.assertEqual(getDataPoint(quote),(quote['stock'], quote['top_bid']['price'], quote['top_ask']['price'], quote['top_bid']['price'] + quote['top_ask']['price'])/2)
+ 
+ 
+ 
+-- 
+2.25.0.windows.1
+
